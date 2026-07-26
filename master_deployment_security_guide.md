@@ -11,7 +11,7 @@ This comprehensive guide gives you step-by-step instructions for:
 
 ### Step 1.1: Create a GitHub Repository
 1. Go to [GitHub.com/new](https://github.com/new) and log in.
-2. Enter Repository Name: `mind-dump-focus`
+2. Enter Repository Name: `holdtherest`
 3. Description: *Serene daily planner, visual focus timer & selective household sharing web app.*
 4. Select **Public**.
 5. Do **NOT** check "Add a README" (your project already has files).
@@ -28,13 +28,13 @@ git init
 git add .
 
 # 3. Commit your code
-git commit -m "Initial release - MindDump & Focus web application"
+git commit -m "Initial release - Hold the Rest web application"
 
 # 4. Set main branch
 git branch -M main
 
 # 5. Link to your GitHub repo (replace YOUR_GITHUB_USERNAME with your real username)
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/mind-dump-focus.git
+git remote add origin https://github.com/YOUR_GITHUB_USERNAME/holdtherest.git
 
 # 6. Push code to GitHub
 git push -u origin main
@@ -42,10 +42,10 @@ git push -u origin main
 
 ### Step 1.3: Host Online for Free via Vercel (1-Click Hosting)
 1. Go to [Vercel.com](https://vercel.com) and click **Sign Up with GitHub**.
-2. Click **"Add New Project"** -> Select `mind-dump-focus`.
+2. Click **"Add New Project"** -> Select `holdtherest`.
 3. Keep default settings (Vite build framework output: `dist`).
 4. Click **Deploy**.
-5. In 45 seconds, your app will be live at `https://mind-dump-focus.vercel.app`!
+5. In about a minute, your app will be live at your configured production URL.
 
 ---
 
@@ -55,21 +55,21 @@ To allow real users to sign in with their `@gmail.com` accounts:
 
 ### Step 2.1: Create Google OAuth 2.0 Credentials
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Click **Select a Project** -> **New Project** -> Name it `MindDump Focus`.
+2. Click **Select a Project** -> **New Project** -> Name it `Hold the Rest`.
 3. Left Menu -> **APIs & Services** -> **OAuth consent screen**:
    - User Type: **External** -> Click **Create**.
-   - App Name: `MindDump & Focus`
+   - App Name: `Hold the Rest`
    - User Support Email: *Your Gmail*
    - Click **Save and Continue**.
 4. Left Menu -> **APIs & Services** -> **Credentials**:
    - Click **Create Credentials** -> **OAuth Client ID**.
    - Application Type: **Web application**.
-   - Name: `MindDump Production Client`.
+   - Name: `Hold the Rest Production Client`.
    - **Authorized JavaScript origins**:
      - `http://localhost:3000`
-     - `https://mind-dump-focus.vercel.app` (your Vercel site URL)
+     - Your production site URL
    - **Authorized redirect URIs**:
-     - `https://mind-dump-focus.vercel.app`
+     - Your production site URL
 5. Copy your **Client ID** and **Client Secret**.
 
 ---
@@ -80,7 +80,7 @@ To ensure data persists across all devices (phone, laptop, spouse's device) and 
 
 ### Step 3.1: Create Free Supabase Project
 1. Go to [Supabase.com](https://supabase.com) and sign up for a free account.
-2. Click **New Project** -> Name it `mind-dump-focus` -> Set a database password.
+2. Click **New Project** -> Name it `holdtherest` -> Set a database password.
 
 ### Step 3.2: Create Encrypted Database Table & Security Rules (RLS)
 Go to the **SQL Editor** tab in Supabase and paste this script:
@@ -120,7 +120,7 @@ async function encryptTaskText(plainText, userSecret) {
     "raw", enc.encode(userSecret), { name: "PBKDF2" }, false, ["deriveKey"]
   );
   const key = await crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: enc.encode("minddump_salt"), iterations: 100000, hash: "SHA-256" },
+    { name: "PBKDF2", salt: enc.encode("holdtherest_salt"), iterations: 100000, hash: "SHA-256" },
     keyMaterial, { name: "AES-GCM", length: 256 }, true, ["encrypt"]
   );
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -145,7 +145,7 @@ async function encryptTaskText(plainText, userSecret) {
 [ Encrypted Payload ]
        │
        ▼ (Google OAuth Token)
-[ Vercel Hosted App: https://mind-dump-focus.vercel.app ]
+[ Hosted App: your production URL ]
        │
        ▼ (Row-Level Security Filter: RLS)
 [ Supabase Free Postgres Database ]

@@ -1,11 +1,50 @@
 import { CATEGORIES } from '../types';
 
-const TASKS_KEY = 'minddump_tasks_v2';
-const SESSIONS_KEY = 'minddump_focus_sessions_v2';
-const PARKING_KEY = 'minddump_parking_lot_v2';
-const ACTIVE_USER_KEY = 'minddump_active_user_email';
-const PARTNER_EMAIL_PREFIX = 'minddump_partner_email:';
-const ACTIVE_FOCUS_PREFIX = 'minddump_active_focus:';
+const TASKS_KEY = 'holdtherest_tasks_v2';
+const SESSIONS_KEY = 'holdtherest_focus_sessions_v2';
+const PARKING_KEY = 'holdtherest_parking_lot_v2';
+const ACTIVE_USER_KEY = 'holdtherest_active_user_email';
+const PARTNER_EMAIL_PREFIX = 'holdtherest_partner_email:';
+const ACTIVE_FOCUS_PREFIX = 'holdtherest_active_focus:';
+
+const LEGACY_KEYS = {
+  minddump_tasks_v2: TASKS_KEY,
+  minddump_focus_sessions_v2: SESSIONS_KEY,
+  minddump_parking_lot_v2: PARKING_KEY,
+  minddump_active_user_email: ACTIVE_USER_KEY
+};
+
+const LEGACY_PREFIXES = {
+  'minddump_partner_email:': PARTNER_EMAIL_PREFIX,
+  'minddump_active_focus:': ACTIVE_FOCUS_PREFIX
+};
+
+const migrateLegacyStorage = () => {
+  if (typeof localStorage === 'undefined') return;
+
+  Object.entries(LEGACY_KEYS).forEach(([legacyKey, currentKey]) => {
+    const legacyValue = localStorage.getItem(legacyKey);
+    if (localStorage.getItem(currentKey) === null && legacyValue !== null) {
+      localStorage.setItem(currentKey, legacyValue);
+    }
+    if (legacyValue !== null) localStorage.removeItem(legacyKey);
+  });
+
+  Object.entries(LEGACY_PREFIXES).forEach(([legacyPrefix, currentPrefix]) => {
+    const matchingKeys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
+      .filter((key) => key?.startsWith(legacyPrefix));
+
+    matchingKeys.forEach((legacyKey) => {
+      const currentKey = currentPrefix + legacyKey.slice(legacyPrefix.length);
+      if (localStorage.getItem(currentKey) === null) {
+        localStorage.setItem(currentKey, localStorage.getItem(legacyKey));
+      }
+      localStorage.removeItem(legacyKey);
+    });
+  });
+};
+
+migrateLegacyStorage();
 
 const normalizeEmail = (value = '') => value.trim().toLowerCase();
 const makeId = (prefix) =>

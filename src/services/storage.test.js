@@ -46,4 +46,9 @@ describe('local storage authorization', () => {
     storage.setActiveUserEmail('partner@example.com');
     expect(storage.toggleTaskComplete(task.id)?.status).toBe('completed');
   });
+
+  it('uses the Hold the Rest storage namespace', () => {
+    storage.addTask({ title: 'Rebranded task', isShared: false });
+    expect(localStorage.getItem('holdtherest_tasks_v2')).toContain('Rebranded task');
+  });
 });

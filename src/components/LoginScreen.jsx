@@ -83,7 +83,7 @@ export function LoginScreen({ onLogin }) {
               fontWeight: 700,
               color: 'var(--text-main)'
             }}>
-              MindDump & Focus
+              Hold the Rest
             </span>
           </div>
 
@@ -366,7 +366,7 @@ export function LoginScreen({ onLogin }) {
                 Interactive Product Demo
               </span>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)', marginTop: '4px' }}>
-                See how MindDump & Focus works
+                See how Hold the Rest works
               </h2>
             </div>
 
@@ -586,7 +586,7 @@ export function LoginScreen({ onLogin }) {
         fontSize: '13px',
         color: 'var(--text-muted)'
       }}>
-        MindDump & Focus — A serene daily planner and focus tool built for peace of mind.
+        Hold the Rest — A serene daily planner and focus tool built for peace of mind.
       </footer>
     </div>
   );

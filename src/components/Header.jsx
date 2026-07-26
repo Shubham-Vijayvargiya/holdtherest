@@ -68,7 +68,7 @@ export function Header({
               color: 'var(--text-main)',
               lineHeight: 1.1
             }}>
-              MindDump & Focus
+              Hold the Rest
             </h1>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
               Calm Daily Planner & Time Tracker

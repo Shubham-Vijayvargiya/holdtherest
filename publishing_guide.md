@@ -1,6 +1,6 @@
 # Publishing & Security Deployment Guide
 
-This guide explains how to **publish your MindDump & Focus web application online** so both you and your wife can access it from any browser, phone, or laptop, secure it with real **Google OAuth 2.0 Authentication**, and enforce **Row Level Security (RLS) / End-to-End Data Encryption**.
+This guide explains how to **publish your Hold the Rest web application online** so both you and your wife can access it from any browser, phone, or laptop, secure it with real **Google OAuth 2.0 Authentication**, and enforce **Row Level Security (RLS) / End-to-End Data Encryption**.
 
 ---
 
@@ -12,18 +12,18 @@ This guide explains how to **publish your MindDump & Focus web application onlin
    ```bash
    git init
    git add .
-   git commit -m "Initial commit - MindDump & Focus"
+   git commit -m "Initial commit - Hold the Rest"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/mind-dump-focus.git
+   git remote add origin https://github.com/YOUR_USERNAME/holdtherest.git
    git push -u origin main
    ```
 
 ### Step 2: Deploy to Vercel (Free Hosting)
 1. Go to [Vercel.com](https://vercel.com) and sign up with GitHub.
-2. Click **"Add New Project"** -> Select `mind-dump-focus`.
+2. Click **"Add New Project"** -> Select `holdtherest`.
 3. Keep default settings (Vite build output: `dist`).
 4. Click **Deploy**.
-5. Within 60 seconds, your app will be live at `https://mind-dump-focus.vercel.app`!
+5. Within 60 seconds, your app will be live at your configured production URL.
 
 ---
 
@@ -33,21 +33,21 @@ To use your real Google Accounts (`@gmail.com`) for sign-in on your live site:
 
 ### Step 1: Create Google OAuth Credentials
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project named **MindDump Focus**.
+2. Create a new project named **Hold the Rest**.
 3. In the left menu, go to **APIs & Services** -> **OAuth consent screen**:
    - User Type: **External** -> Click Create.
-   - App Name: **MindDump & Focus**
+   - App Name: **Hold the Rest**
    - User Support Email: Your Gmail.
    - Save and continue.
 4. Go to **APIs & Services** -> **Credentials**:
    - Click **Create Credentials** -> **OAuth Client ID**.
    - Application Type: **Web application**.
-   - Name: **MindDump Web Client**.
+   - Name: **Hold the Rest Web Client**.
    - **Authorized JavaScript origins**:
      - `http://localhost:3000`
-     - `https://mind-dump-focus.vercel.app` (your Vercel live URL)
+     - Your production site URL
    - **Authorized redirect URIs**:
-     - `https://mind-dump-focus.vercel.app`
+     - Your production site URL
 5. Copy your **Client ID**.
 
 ---

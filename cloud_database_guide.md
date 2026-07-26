@@ -25,7 +25,7 @@ The two easiest free options:
 
 #### 5-Minute Setup Steps:
 1. Go to [Supabase.com](https://supabase.com) and create a free account.
-2. Click **New Project** -> Name it `mind-dump-focus`.
+2. Click **New Project** -> Name it `holdtherest`.
 3. In the SQL Editor, run this 1-click script to create your database tables:
 
 ```sql
@@ -66,7 +66,7 @@ FOR ALL USING (
 **Firebase** by Google is another popular option providing real-time multi-device sync:
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com).
-2. Create project `mind-dump-focus`.
+2. Create project `holdtherest`.
 3. Turn on **Firestore Database** and **Firebase Authentication (Google Provider)**.
 4. Set Firestore Security Rules:
 ```javascript
