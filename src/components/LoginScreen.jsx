@@ -314,7 +314,7 @@ export function LoginScreen({ onLogin }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
             <ShieldCheck size={18} style={{ color: 'var(--nice-color)' }} />
-            <span>Encrypted Data Isolation</span>
+                <span>Encrypted in transit and at rest</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
@@ -324,7 +324,7 @@ export function LoginScreen({ onLogin }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
             <Users size={18} style={{ color: 'var(--shared-color)' }} />
-            <span>Selective Spouse Sharing</span>
+                <span>Database-enforced private sharing</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
@@ -586,7 +586,11 @@ export function LoginScreen({ onLogin }) {
         fontSize: '13px',
         color: 'var(--text-muted)'
       }}>
-        Hold the Rest — A serene daily planner and focus tool built for peace of mind.
+        <strong>Hold the Rest</strong> — developed by Shubham Vijayvargiya.
+        {' '}Questions or support?{' '}
+        <a href="mailto:vijayvargiya.shubham@gmail.com" style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>
+          vijayvargiya.shubham@gmail.com
+        </a>
       </footer>
     </div>
   );

@@ -1,529 +1,256 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CATEGORY_CONFIG } from '../types';
-import { Play, Pause, RotateCcw, CheckCircle2, ArrowLeft, Inbox } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, Inbox, MessageSquare, Pause, Play, Save, Users } from 'lucide-react';
+import { NotesEditor, RichNotes } from './RichNotes';
+
+const formatDuration = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return minutes ? `${minutes}m ${remainder}s` : `${remainder}s`;
+};
+
+const formatDate = (value) => new Date(value).toLocaleString([], {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit'
+});
 
 export function FocusMode({
   task,
+  detail,
+  members,
+  activeUser,
   onCompleteTask,
   onExitFocus,
   onParkThought,
-  onLogSession
+  onLogSession,
+  onSaveNotes,
+  onAddComment,
+  onUpdateShares
 }) {
-  // Preset options in minutes
-  const PRESETS = [10, 25, 45];
-  const [selectedMinutes, setSelectedMinutes] = useState(25);
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState(25 * 60);
+  const [preset, setPreset] = useState(25);
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const accumulatedSecondsRef = useRef(0);
-  const runStartedAtRef = useRef(null);
-
-  // Parking Lot state
-  const [showParkingInput, setShowParkingInput] = useState(false);
+  const [notes, setNotes] = useState(task.notes || '');
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [comment, setComment] = useState('');
   const [parkedText, setParkedText] = useState('');
-  const [parkedToast, setParkedToast] = useState('');
-  const parkingInputRef = useRef(null);
+  const [showParking, setShowParking] = useState(false);
+  const [selectedShares, setSelectedShares] = useState(task.sharedWithEmails || []);
+  const intervalStartedAt = useRef(null);
+  const isOwner = task.userId === activeUser.id;
+  const config = CATEGORY_CONFIG[task.category];
 
-  const catConfig = CATEGORY_CONFIG[task.category] || CATEGORY_CONFIG['must_do'];
+  useEffect(() => setNotes(task.notes || ''), [task.notes]);
 
-  // Handle Hotkey (Ctrl+K or Cmd+K)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setShowParkingInput(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Auto focus input when modal opens
-  useEffect(() => {
-    if (showParkingInput && parkingInputRef.current) {
-      parkingInputRef.current.focus();
-    }
-  }, [showParkingInput]);
-
-  // Timer interval effect
   useEffect(() => {
     if (!isRunning) return undefined;
-    const totalSeconds = selectedMinutes * 60;
-    const updateFromClock = () => {
-      const currentRunSeconds = Math.floor((Date.now() - runStartedAtRef.current) / 1000);
-      const elapsed = Math.min(totalSeconds, accumulatedSecondsRef.current + currentRunSeconds);
-      setElapsedSeconds(elapsed);
-      setTimeLeftSeconds(Math.max(0, totalSeconds - elapsed));
-      if (elapsed >= totalSeconds) {
-        accumulatedSecondsRef.current = totalSeconds;
-        runStartedAtRef.current = null;
-        setIsRunning(false);
-      }
-    };
-    updateFromClock();
-    const interval = window.setInterval(updateFromClock, 250);
-    return () => window.clearInterval(interval);
-  }, [isRunning, selectedMinutes]);
+    const timer = window.setInterval(() => {
+      setTimeLeft((current) => {
+        if (current <= 1) {
+          setIsRunning(false);
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [isRunning]);
 
-  const handleToggleTimer = () => {
+  const logCurrentInterval = async () => {
+    if (!intervalStartedAt.current) return;
+    const startedAt = intervalStartedAt.current;
+    const durationSeconds = Math.max(1, Math.round((Date.now() - new Date(startedAt).getTime()) / 1000));
+    intervalStartedAt.current = null;
+    await onLogSession({
+      taskId: task.id,
+      taskTitle: task.title,
+      category: task.category,
+      durationSeconds,
+      startedAt
+    });
+  };
+
+  const toggleTimer = async () => {
     if (isRunning) {
-      const currentRunSeconds = Math.floor((Date.now() - runStartedAtRef.current) / 1000);
-      accumulatedSecondsRef.current = Math.min(
-        selectedMinutes * 60,
-        accumulatedSecondsRef.current + currentRunSeconds
-      );
-      setElapsedSeconds(accumulatedSecondsRef.current);
-      runStartedAtRef.current = null;
       setIsRunning(false);
+      await logCurrentInterval();
       return;
     }
-    if (timeLeftSeconds <= 0) return;
-    runStartedAtRef.current = Date.now();
+    if (!timeLeft) return;
+    intervalStartedAt.current = new Date().toISOString();
     setIsRunning(true);
   };
 
-  const handleSelectPreset = (mins) => {
-    setSelectedMinutes(mins);
-    setTimeLeftSeconds(mins * 60);
-    setElapsedSeconds(0);
-    accumulatedSecondsRef.current = 0;
-    runStartedAtRef.current = null;
+  const selectPreset = (minutes) => {
+    setPreset(minutes);
+    setTimeLeft(minutes * 60);
     setIsRunning(false);
+    intervalStartedAt.current = null;
   };
 
-  const handleReset = () => {
+  const exit = async () => {
     setIsRunning(false);
-    setTimeLeftSeconds(selectedMinutes * 60);
-    setElapsedSeconds(0);
-    accumulatedSecondsRef.current = 0;
-    runStartedAtRef.current = null;
-  };
-
-  const handleComplete = () => {
-    setIsRunning(false);
-    // Log time spent
-    if (elapsedSeconds > 0) {
-      onLogSession({
-        taskId: task.id,
-        taskTitle: task.title,
-        category: task.category,
-        durationSeconds: elapsedSeconds
-      });
-    }
-    onCompleteTask(task.id);
-  };
-
-  const handleExit = () => {
-    setIsRunning(false);
-    if (elapsedSeconds > 0) {
-      onLogSession({
-        taskId: task.id,
-        taskTitle: task.title,
-        category: task.category,
-        durationSeconds: elapsedSeconds
-      });
-    }
+    await logCurrentInterval();
     onExitFocus();
   };
 
-  const handleSaveParkedThought = (e) => {
-    e.preventDefault();
-    if (!parkedText.trim()) return;
-
-    onParkThought(parkedText.trim());
-    setParkedText('');
-    setShowParkingInput(false);
-
-    setParkedToast('Thought parked safely. Focus timer uninterrupted.');
-    setTimeout(() => setParkedToast(''), 3500);
+  const complete = async () => {
+    setIsRunning(false);
+    await logCurrentInterval();
+    await onCompleteTask(task);
   };
 
-  // Calculate Ring Progress
-  const totalSecondsForPreset = selectedMinutes * 60;
-  const progressPercent = totalSecondsForPreset > 0
-    ? ((totalSecondsForPreset - timeLeftSeconds) / totalSecondsForPreset) * 100
-    : 0;
+  const saveNotes = async () => {
+    await onSaveNotes(task.id, notes);
+    setEditingNotes(false);
+  };
 
-  const minutesDisplay = String(Math.floor(timeLeftSeconds / 60)).padStart(2, '0');
-  const secondsDisplay = String(timeLeftSeconds % 60).padStart(2, '0');
+  const addComment = async (event) => {
+    event.preventDefault();
+    if (!comment.trim()) return;
+    await onAddComment(task.id, comment.trim());
+    setComment('');
+  };
 
-  // Time logged formatted for bottom status
-  const elapsedMins = Math.floor(elapsedSeconds / 60);
-  const elapsedSecs = elapsedSeconds % 60;
+  const toggleShare = async (email) => {
+    const next = selectedShares.includes(email)
+      ? selectedShares.filter((value) => value !== email)
+      : [...selectedShares, email];
+    setSelectedShares(next);
+    await onUpdateShares(task.id, next);
+  };
+
+  const parkThought = async (event) => {
+    event.preventDefault();
+    if (!parkedText.trim()) return;
+    await onParkThought(parkedText.trim());
+    setParkedText('');
+    setShowParking(false);
+  };
+
+  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+  const seconds = String(timeLeft % 60).padStart(2, '0');
+  const progress = 1 - timeLeft / (preset * 60);
+
+  const timeline = [
+    ...(detail?.comments || []).map((item) => ({ kind: 'comment', at: item.created_at, item })),
+    ...(detail?.sessions || []).map((item) => ({ kind: 'session', at: item.startedAt, item })),
+    ...(detail?.activity || []).map((item) => ({ kind: 'activity', at: item.created_at, item }))
+  ].sort((a, b) => new Date(b.at) - new Date(a.at));
 
   return (
-    <div style={{
-      maxWidth: '720px',
-      margin: '0 auto',
-      padding: '40px 20px',
-      minHeight: '80vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative'
-    }}>
-      {/* Top Header Controls */}
-      <div style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '40px'
-      }}>
-        <button
-          onClick={handleExit}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: 'var(--text-muted)',
-            fontSize: '13px',
-            fontWeight: 600,
-            padding: '8px 14px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--bg-subtle)',
-            border: '1px solid var(--border-light)'
-          }}
-        >
-          <ArrowLeft size={16} />
-          <span>Exit Focus</span>
-        </button>
-
-        {/* Hotkey Hint button */}
-        <button
-          onClick={() => setShowParkingInput(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: '#0f766e',
-            backgroundColor: '#f0fdfa',
-            border: '1px solid #99f6e4',
-            fontSize: '12.5px',
-            fontWeight: 600,
-            padding: '8px 14px',
-            borderRadius: 'var(--radius-md)'
-          }}
-        >
-          <Inbox size={16} />
-          <span>Park a Thought (Ctrl+K)</span>
-        </button>
+    <div className="focus-page">
+      <div className="focus-page__topbar">
+        <button className="secondary-button" onClick={exit}><ArrowLeft size={16} /> Back to tasks</button>
+        <button className="secondary-button" onClick={() => setShowParking(true)}><Inbox size={16} /> Park thought</button>
       </div>
 
-      {/* Focus Task Card */}
-      <div style={{
-        width: '100%',
-        backgroundColor: 'var(--bg-main)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-strong)',
-        padding: '36px',
-        boxShadow: 'var(--shadow-lg)',
-        textAlign: 'center',
-        marginBottom: '36px'
-      }}>
-        {/* Category Pill */}
-        <span style={{
-          display: 'inline-block',
-          padding: '4px 14px',
-          borderRadius: 'var(--radius-full)',
-          fontSize: '12px',
-          fontWeight: 700,
-          color: catConfig.color,
-          backgroundColor: catConfig.bg,
-          border: `1px solid ${catConfig.border}`,
-          marginBottom: '16px'
-        }}>
-          Current Focus — {catConfig.label}
-        </span>
+      <div className="focus-layout">
+        <section className="focus-workspace">
+          <span className="category-pill" style={{ color: config.color, background: config.bg, borderColor: config.border }}>{config.label}</span>
+          <h1>{task.title}</h1>
 
-        {/* Active Task Title */}
-        <h2 style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: '26px',
-          fontWeight: 700,
-          color: 'var(--text-main)',
-          lineHeight: 1.3,
-          marginBottom: task.notes ? '12px' : '24px'
-        }}>
-          {task.title}
-        </h2>
+          <div className="timer-presets">
+            {[10, 25, 45].map((value) => (
+              <button key={value} disabled={isRunning} data-active={preset === value} onClick={() => selectPreset(value)}>{value} min</button>
+            ))}
+          </div>
 
-        {task.notes && (
-          <p style={{
-            fontSize: '14px',
-            color: 'var(--text-muted)',
-            maxWidth: '500px',
-            margin: '0 auto 24px auto'
-          }}>
-            {task.notes}
-          </p>
-        )}
-
-        {/* Tiimo-inspired Visual Timer Ring */}
-        <div style={{
-          position: 'relative',
-          width: '200px',
-          height: '200px',
-          margin: '0 auto 28px auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <svg width="200" height="200" style={{ transform: 'rotate(-90deg)' }}>
-            {/* Background Track */}
-            <circle
-              cx="100"
-              cy="100"
-              r="84"
-              stroke="var(--bg-subtle)"
-              strokeWidth="12"
-              fill="transparent"
-            />
-            {/* Progress Stroke */}
-            <circle
-              cx="100"
-              cy="100"
-              r="84"
-              stroke="var(--accent-primary)"
-              strokeWidth="12"
-              fill="transparent"
-              strokeDasharray={2 * Math.PI * 84}
-              strokeDashoffset={2 * Math.PI * 84 * (1 - progressPercent / 100)}
-              strokeLinecap="round"
-              style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-            />
-          </svg>
-
-          {/* Center Digital Clock */}
-          <div style={{
-            position: 'absolute',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: '36px',
-              fontWeight: 700,
-              color: 'var(--text-main)',
-              letterSpacing: '1px'
-            }}>
-              {minutesDisplay}:{secondsDisplay}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, marginTop: '2px' }}>
-              {isRunning ? 'FOCUSING' : 'PAUSED'}
+          <div className="focus-timer-ring" style={{ '--timer-progress': `${progress * 360}deg` }}>
+            <div>
+              <strong>{minutes}:{seconds}</strong>
+              <span>{isRunning ? 'Focus interval running' : 'Ready when you are'}</span>
             </div>
           </div>
-        </div>
 
-        {/* Preset Selector Buttons */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          marginBottom: '28px'
-        }}>
-          {PRESETS.map(mins => (
-            <button
-              key={mins}
-              onClick={() => handleSelectPreset(mins)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '12.5px',
-                fontWeight: 600,
-                color: selectedMinutes === mins ? 'var(--accent-primary)' : 'var(--text-muted)',
-                backgroundColor: selectedMinutes === mins ? 'var(--accent-primary-bg)' : 'var(--bg-subtle)',
-                border: `1px solid ${selectedMinutes === mins ? 'var(--accent-primary-border)' : 'var(--border-light)'}`,
-                transition: 'all 0.15s ease'
-              }}
-            >
-              {mins}m
+          <div className="focus-actions">
+            <button className="primary-button" onClick={toggleTimer}>
+              {isRunning ? <Pause size={18} /> : <Play size={18} fill="currentColor" />}
+              {isRunning ? 'Pause & log interval' : 'Start focus'}
             </button>
-          ))}
-        </div>
-
-        {/* Timer Action Buttons */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px'
-        }}>
-          <button
-            onClick={handleToggleTimer}
-            disabled={!isRunning && timeLeftSeconds <= 0}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 28px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: isRunning ? 'var(--bg-subtle)' : 'var(--accent-primary)',
-              color: isRunning ? 'var(--text-main)' : '#ffffff',
-              border: isRunning ? '1px solid var(--border-strong)' : 'none',
-              fontSize: '15px',
-              fontWeight: 700,
-              boxShadow: isRunning ? 'none' : 'var(--shadow-md)',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {isRunning ? <Pause size={18} /> : <Play size={18} fill="currentColor" />}
-            <span>{isRunning ? 'Pause Timer' : 'Start Focus'}</span>
-          </button>
-
-          <button
-            onClick={handleReset}
-            title="Reset timer"
-            style={{
-              padding: '12px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--bg-subtle)',
-              border: '1px solid var(--border-light)',
-              color: 'var(--text-muted)'
-            }}
-          >
-            <RotateCcw size={18} />
-          </button>
-
-          <button
-            onClick={handleComplete}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 24px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--nice-bg)',
-              color: 'var(--nice-color)',
-              border: '1px solid var(--nice-border)',
-              fontSize: '14px',
-              fontWeight: 700,
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <CheckCircle2 size={18} />
-            <span>Mark Yes / Done</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Live Time Tracked Session Footer */}
-      <div style={{
-        fontSize: '13px',
-        color: 'var(--text-muted)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px'
-      }}>
-        <span>Time logged in this session:</span>
-        <strong style={{ color: 'var(--text-main)' }}>
-          {elapsedMins > 0 ? `${elapsedMins}m ${elapsedSecs}s` : `${elapsedSecs}s`}
-        </strong>
-      </div>
-
-      {/* Toast Feedback */}
-      {parkedToast && (
-        <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          backgroundColor: '#0f766e',
-          color: '#ffffff',
-          padding: '12px 24px',
-          borderRadius: 'var(--radius-md)',
-          fontSize: '13.5px',
-          fontWeight: 600,
-          boxShadow: 'var(--shadow-lg)',
-          zIndex: 200
-        }}>
-          {parkedToast}
-        </div>
-      )}
-
-      {/* Parking Lot Modal Input (Ctrl+K) */}
-      {showParkingInput && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.4)',
-          backdropFilter: 'blur(3px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 300,
-          padding: '20px'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--bg-main)',
-            width: '100%',
-            maxWidth: '480px',
-            borderRadius: 'var(--radius-lg)',
-            padding: '24px',
-            boxShadow: 'var(--shadow-lg)',
-            border: '1px solid var(--border-light)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>
-                Park an Intrusive Thought
-              </h3>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', backgroundColor: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: '4px' }}>
-                Timer keeps running
-              </span>
-            </div>
-
-            <form onSubmit={handleSaveParkedThought}>
-              <input
-                ref={parkingInputRef}
-                type="text"
-                value={parkedText}
-                onChange={(e) => setParkedText(e.target.value)}
-                placeholder="What's distracting you? Dump it here to safely return..."
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--accent-primary)',
-                  fontSize: '14px',
-                  outline: 'none',
-                  marginBottom: '16px'
-                }}
-              />
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowParkingInput(false)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-subtle)',
-                    color: 'var(--text-muted)',
-                    fontSize: '13px',
-                    fontWeight: 600
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!parkedText.trim()}
-                  style={{
-                    padding: '8px 18px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--accent-primary)',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    fontWeight: 600
-                  }}
-                >
-                  Save to Parking Lot
-                </button>
-              </div>
-            </form>
+            {isOwner && <button className="success-button" onClick={complete}><CheckCircle2 size={18} /> Complete task</button>}
           </div>
+
+          <div className="focus-section">
+            <div className="focus-section__heading">
+              <div><span className="eyebrow">Working notes</span><h2>Context for your next session</h2></div>
+              {isOwner && !editingNotes && <button className="text-button" onClick={() => setEditingNotes(true)}>Edit notes</button>}
+            </div>
+            {editingNotes ? (
+              <>
+                <NotesEditor value={notes} onChange={setNotes} />
+                <div className="editor-actions">
+                  <button className="secondary-button" onClick={() => { setNotes(task.notes || ''); setEditingNotes(false); }}>Cancel</button>
+                  <button className="primary-button" onClick={saveNotes}><Save size={16} /> Save notes</button>
+                </div>
+              </>
+            ) : <RichNotes value={task.notes} />}
+          </div>
+
+          {isOwner && members.length > 0 && (
+            <div className="focus-section">
+              <div className="focus-section__heading">
+                <div><span className="eyebrow"><Users size={13} /> Sharing</span><h2>Who can see this task?</h2></div>
+              </div>
+              <div className="share-picker">
+                {members.map((member) => (
+                  <button
+                    key={member.id}
+                    data-selected={selectedShares.includes(member.member_email)}
+                    onClick={() => toggleShare(member.member_email)}
+                  >
+                    {member.display_name || member.member_email.split('@')[0]}
+                    <small>{member.member_email}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        <aside className="task-timeline">
+          <div>
+            <span className="eyebrow">Task record</span>
+            <h2>Comments & history</h2>
+            <p>Every focus interval and update stays attached to this task.</p>
+          </div>
+
+          <form className="comment-form" onSubmit={addComment}>
+            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Add a progress note or comment…" rows={3} maxLength={5000} />
+            <button className="primary-button" type="submit" disabled={!comment.trim()}><MessageSquare size={15} /> Add comment</button>
+          </form>
+
+          <div className="timeline-list">
+            {timeline.length === 0 ? (
+              <div className="empty-state compact"><strong>No history yet</strong><span>Your first comment or focus interval will appear here.</span></div>
+            ) : timeline.map((entry) => (
+              <article className={`timeline-entry timeline-entry--${entry.kind}`} key={`${entry.kind}-${entry.item.id}`}>
+                <span className="timeline-entry__icon">{entry.kind === 'session' ? <Clock size={15} /> : entry.kind === 'comment' ? <MessageSquare size={15} /> : <CheckCircle2 size={15} />}</span>
+                <div>
+                  {entry.kind === 'comment' && <><strong>{entry.item.author_name || 'User'}</strong><p>{entry.item.body}</p></>}
+                  {entry.kind === 'session' && <><strong>{formatDuration(entry.item.durationSeconds)} focus interval</strong><p>Logged by {entry.item.userEmail}</p></>}
+                  {entry.kind === 'activity' && <><strong>{entry.item.event_type.replaceAll('_', ' ')}</strong><p>{entry.item.actor_name || 'User'}</p></>}
+                  <time>{formatDate(entry.at)}</time>
+                </div>
+              </article>
+            ))}
+          </div>
+        </aside>
+      </div>
+
+      {showParking && (
+        <div className="modal-backdrop">
+          <form className="small-modal" onSubmit={parkThought}>
+            <h2>Park a thought</h2>
+            <p>Capture the distraction without leaving this task.</p>
+            <textarea autoFocus value={parkedText} onChange={(e) => setParkedText(e.target.value)} rows={4} />
+            <div>
+              <button type="button" className="secondary-button" onClick={() => setShowParking(false)}>Cancel</button>
+              <button type="submit" className="primary-button">Save to parking lot</button>
+            </div>
+          </form>
         </div>
       )}
     </div>

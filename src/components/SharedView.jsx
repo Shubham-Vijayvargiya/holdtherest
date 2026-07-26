@@ -22,11 +22,11 @@ export function SharedView({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--shared-color)', marginBottom: '8px' }}>
           <Users size={24} />
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '20px', fontWeight: 700, color: 'var(--text-main)' }}>
-            Shared Household Hub
+            Shared Tasks
           </h2>
         </div>
         <p style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          Common items shared between you and your partner. Only tasks explicitly marked as <strong>Shared</strong> appear here. All your other tasks remain strictly private to your logged-in account.
+          Tasks shared with your three-person circle appear here. Everything else remains private to its owner.
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export function SharedView({
             No shared items right now
           </h3>
           <p style={{ fontSize: '13px' }}>
-            To share a task with your partner, click the "Private" badge on any task card or toggle "Shared with Partner" when creating a new task.
+            Add people under Members, then select them while creating a task or from the task's Focus view.
           </p>
         </div>
       ) : (
@@ -74,6 +74,8 @@ export function SharedView({
                 {/* Complete checkbox */}
                 <button
                   onClick={() => onToggleComplete(task.id)}
+                  disabled={!isOwner}
+                  title={isOwner ? (isCompleted ? 'Reopen task' : 'Complete task') : 'Only the task owner can change completion'}
                   aria-label={`${isCompleted ? 'Reopen' : 'Complete'} ${task.title}`}
                   style={{
                     width: '22px',
@@ -158,7 +160,7 @@ export function SharedView({
                       }}
                       >
                         <Lock size={12} />
-                        <span>Make Private Again</span>
+                        <span>Manage sharing</span>
                       </button>
                     ) : (
                       <span className="ownership-label">Shared by {task.userEmail}</span>

@@ -10,6 +10,10 @@ A calm, privacy-conscious task planner built around one visible focus at a time.
 - Explicit partner sharing with owner-only privacy and delete controls
 - Focus-session analytics
 - Required Google authentication through Supabase
+- Cloud-backed profiles, tasks, members, comments, and focus history
+- Up to three sharing-circle members with per-task access
+- Formatted task notes and a chronological task audit trail
+- Light and dark themes
 
 ## Local development
 
@@ -27,7 +31,7 @@ npm run check
 ## Configure Google authentication
 
 1. Create a Supabase project.
-2. Run `supabase/migrations/001_initial_schema.sql` in the SQL editor.
+2. Run `supabase/migrations/001_initial_schema.sql`, then `supabase/migrations/002_product_upgrade.sql`, in the SQL editor.
 3. Enable the Google provider under Authentication → Providers.
 4. Copy `.env.example` to `.env.local` and provide the project URL and public anonymous key.
 5. Add the local and production URLs to Supabase's redirect URL allowlist.
@@ -36,12 +40,13 @@ The anonymous key is safe to expose in a browser only when row-level security re
 
 ## Current cloud scope
 
-The application requires Supabase Google authentication and has no local sign-in fallback. The included schema and cloud data service enforce owner/recipient reads and owner-only writes. Browser storage remains the active task repository in this release; connect `cloudDb` to the application state before treating cross-device synchronization as complete.
+The application requires Supabase Google authentication and has no local sign-in fallback. Profiles, sharing-circle members, tasks, formatted notes, comments, focus intervals, activity history, and parked thoughts are stored in Supabase. The application does not use browser storage for task data.
 
 ## Security model
 
-- Private browser tasks are scoped to the authenticated Google email in the UI.
-- Shared tasks are visible only to their owner and explicit recipient.
+- Private cloud tasks are scoped to the authenticated user ID by database policy.
+- Shared tasks are visible only to their owner and explicitly selected recipient emails.
 - Only owners can delete tasks or change sharing.
 - Supabase policies derive identity from the authenticated JWT rather than client-provided user IDs.
+- Supabase encrypts hosted project data at rest, and its HTTP APIs enforce TLS in transit.
 - No Gmail, Calendar, Drive, contacts, or Google password access is requested.
