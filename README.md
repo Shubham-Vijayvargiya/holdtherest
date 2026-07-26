@@ -31,7 +31,7 @@ npm run check
 ## Configure Google authentication
 
 1. Create a Supabase project.
-2. Run `supabase/migrations/001_initial_schema.sql`, then `supabase/migrations/002_product_upgrade.sql`, in the SQL editor.
+2. Run the numbered files in `supabase/migrations/` in order in the SQL editor.
 3. Enable the Google provider under Authentication → Providers.
 4. Copy `.env.example` to `.env.local` and provide the project URL and public anonymous key.
 5. Add the local and production URLs to Supabase's redirect URL allowlist.

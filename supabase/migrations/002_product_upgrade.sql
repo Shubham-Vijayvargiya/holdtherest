@@ -190,7 +190,10 @@ alter table public.parking_items enable row level security;
 drop policy if exists "owners and recipients can read tasks" on public.tasks;
 create policy "task participants can read"
 on public.tasks for select
-using (public.can_access_task(id));
+using (
+  auth.uid() = user_id
+  or public.can_access_task(id)
+);
 
 drop policy if exists "owners can create tasks" on public.tasks;
 create policy "owners can create tasks"
