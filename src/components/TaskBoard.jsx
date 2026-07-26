@@ -24,7 +24,7 @@ export function TaskBoard({
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+    <div className="task-board" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
       {categories.map(cat => {
         const config = CATEGORY_CONFIG[cat];
         const catTasks = tasks.filter(t => t.category === cat && t.status !== 'completed');
@@ -36,7 +36,7 @@ export function TaskBoard({
         );
 
         return (
-          <div key={cat} style={{
+          <div className="task-column" key={cat} style={{
             backgroundColor: 'var(--bg-main)',
             borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--border-light)',

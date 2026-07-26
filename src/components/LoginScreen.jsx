@@ -39,7 +39,7 @@ export function LoginScreen({ onLogin }) {
   };
 
   return (
-    <div style={{
+    <div className="login-screen" style={{
       minHeight: '100vh',
       backgroundColor: 'var(--bg-main)',
       color: 'var(--text-main)',
@@ -47,14 +47,14 @@ export function LoginScreen({ onLogin }) {
       flexDirection: 'column'
     }}>
       {/* --- TOP LANDING NAVBAR --- */}
-      <header style={{
+      <header className="login-header" style={{
         borderBottom: '1px solid var(--border-light)',
         backgroundColor: '#ffffff',
         position: 'sticky',
         top: 0,
         zIndex: 100
       }}>
-        <div style={{
+        <div className="login-header__inner" style={{
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '16px 24px',
@@ -63,8 +63,8 @@ export function LoginScreen({ onLogin }) {
           justifyContent: 'space-between'
         }}>
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
+          <div className="login-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="login-brand__icon" style={{
               width: '36px',
               height: '36px',
               borderRadius: '10px',
@@ -77,7 +77,7 @@ export function LoginScreen({ onLogin }) {
             }}>
               <Heart size={20} />
             </div>
-            <span style={{
+            <span className="login-brand__name" style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '20px',
               fontWeight: 700,
@@ -88,8 +88,9 @@ export function LoginScreen({ onLogin }) {
           </div>
 
           {/* Right Nav CTA */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="login-header__actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
+              className="login-header__signin"
               onClick={startGoogleSignIn}
               disabled={isSigningIn}
               style={{
@@ -103,6 +104,7 @@ export function LoginScreen({ onLogin }) {
             </button>
 
             <button
+              className="login-header__cta"
               onClick={startGoogleSignIn}
               disabled={isSigningIn}
               style={{
@@ -122,10 +124,10 @@ export function LoginScreen({ onLogin }) {
       </header>
 
       {/* Main Landing Area */}
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px 64px 24px', flex: 1 }}>
+      <main className="login-main" style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px 64px 24px', flex: 1 }}>
 
         {/* --- HERO SECTION (2-COLUMN) --- */}
-        <div style={{
+        <div className="login-hero" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '48px',
@@ -133,8 +135,8 @@ export function LoginScreen({ onLogin }) {
           marginBottom: '64px'
         }}>
           {/* Left Column Text & CTAs */}
-          <div>
-            <h1 style={{
+          <div className="login-hero__content">
+            <h1 className="login-hero__title" style={{
               fontFamily: 'var(--font-heading)',
               fontSize: 'clamp(32px, 4.5vw, 48px)',
               fontWeight: 800,
@@ -147,8 +149,8 @@ export function LoginScreen({ onLogin }) {
             </h1>
 
             {/* Clean SVG Bullet List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="login-benefits" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+              <div className="login-benefit" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '32px',
                   height: '32px',
@@ -168,7 +170,7 @@ export function LoginScreen({ onLogin }) {
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="login-benefit" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '32px',
                   height: '32px',
@@ -188,7 +190,7 @@ export function LoginScreen({ onLogin }) {
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="login-benefit" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
                   width: '32px',
                   height: '32px',
@@ -210,7 +212,7 @@ export function LoginScreen({ onLogin }) {
             </div>
 
             {/* PURE Single Google Login Button */}
-            <form onSubmit={handleGoogleSignIn} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px', marginBottom: '16px' }}>
+            <form className="login-google-form" onSubmit={handleGoogleSignIn} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px', marginBottom: '16px' }}>
               <button
                 type="submit"
                 disabled={isSigningIn}
@@ -245,7 +247,7 @@ export function LoginScreen({ onLogin }) {
               </button>
             </form>
 
-            <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            <p className="login-privacy-note" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
               Google identity only • No Gmail, Drive, Calendar, or Contacts access
             </p>
             {authError && (
@@ -256,8 +258,8 @@ export function LoginScreen({ onLogin }) {
           </div>
 
           {/* Right Column: Serene Image */}
-          <div style={{ textAlign: 'center', position: 'relative' }}>
-            <div style={{
+          <div className="login-hero__visual" style={{ textAlign: 'center', position: 'relative' }}>
+            <div className="login-hero__image-wrap" style={{
               position: 'relative',
               display: 'inline-block',
               maxWidth: '460px',
@@ -298,7 +300,7 @@ export function LoginScreen({ onLogin }) {
         </div>
 
         {/* --- TRUST & VALUES BAR --- */}
-        <div style={{
+        <div className="login-trust-bar" style={{
           backgroundColor: 'var(--bg-subtle)',
           border: '1px solid var(--border-light)',
           borderRadius: 'var(--radius-lg)',
@@ -332,7 +334,7 @@ export function LoginScreen({ onLogin }) {
         </div>
 
         {/* --- INTERACTIVE PRODUCT DEMO SHOWCASE --- */}
-        <div style={{
+        <div className="login-demo" style={{
           backgroundColor: 'var(--bg-main)',
           border: '1px solid var(--border-strong)',
           borderRadius: 'var(--radius-lg)',
@@ -340,7 +342,7 @@ export function LoginScreen({ onLogin }) {
           overflow: 'hidden'
         }}>
           {/* Demo Header Bar */}
-          <div style={{
+          <div className="login-demo__header" style={{
             backgroundColor: 'var(--bg-subtle)',
             borderBottom: '1px solid var(--border-light)',
             padding: '16px 24px',
@@ -369,7 +371,7 @@ export function LoginScreen({ onLogin }) {
             </div>
 
             {/* Demo Navigation Tabs */}
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div className="login-demo__tabs" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {[
                 { id: 'matrix', label: 'Priority Matrix', icon: Sparkles, color: 'var(--must-color)' },
                 { id: 'focus', label: 'Focus Timer', icon: Play, color: 'var(--accent-primary)' },
@@ -406,7 +408,7 @@ export function LoginScreen({ onLogin }) {
           </div>
 
           {/* Demo Content Canvas */}
-          <div style={{ padding: '32px' }}>
+          <div className="login-demo__content" style={{ padding: '32px' }}>
             {/* Tab 1: Priority Matrix Demo */}
             {activeDemoTab === 'matrix' && (
               <div className="animate-fade-in">

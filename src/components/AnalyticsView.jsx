@@ -33,7 +33,7 @@ export function AnalyticsView({ sessions, activeUser }) {
   };
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+    <div className="analytics-view" style={{ maxWidth: '960px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '28px' }}>
         <h2 style={{
@@ -51,7 +51,7 @@ export function AnalyticsView({ sessions, activeUser }) {
       </div>
 
       {/* Stat Cards Row */}
-      <div style={{
+      <div className="analytics-stats" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: '20px',
@@ -119,7 +119,7 @@ export function AnalyticsView({ sessions, activeUser }) {
       </div>
 
       {/* Priority Time Breakdown */}
-      <div style={{
+      <div className="analytics-panel" style={{
         backgroundColor: 'var(--bg-main)',
         border: '1px solid var(--border-light)',
         borderRadius: 'var(--radius-lg)',
@@ -183,7 +183,7 @@ export function AnalyticsView({ sessions, activeUser }) {
       </div>
 
       {/* Detailed Sessions History */}
-      <div style={{
+      <div className="analytics-panel" style={{
         backgroundColor: 'var(--bg-main)',
         border: '1px solid var(--border-light)',
         borderRadius: 'var(--radius-lg)',
@@ -206,6 +206,7 @@ export function AnalyticsView({ sessions, activeUser }) {
 
               return (
                 <div
+                  className="analytics-session"
                   key={sess.id}
                   style={{
                     display: 'flex',

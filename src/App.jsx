@@ -229,7 +229,10 @@ export function App() {
         />
       )}
 
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: currentView === 'focus' ? '0' : '32px 24px' }}>
+      <main
+        className={currentView === 'focus' ? 'app-main app-main--focus' : 'app-main'}
+        style={{ maxWidth: '1200px', margin: '0 auto', padding: currentView === 'focus' ? '0' : '32px 24px' }}
+      >
         {currentView === 'planner' && (
           <div className="animate-fade-in">
             <BrainDumpInput

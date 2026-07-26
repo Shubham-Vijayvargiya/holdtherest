@@ -24,14 +24,14 @@ export function Header({
   };
 
   return (
-    <header style={{
+    <header className="app-header" style={{
       borderBottom: '1px solid var(--border-light)',
       backgroundColor: 'var(--bg-main)',
       position: 'sticky',
       top: 0,
       zIndex: 100
     }}>
-      <div style={{
+      <div className="app-header__inner" style={{
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '14px 24px',
@@ -42,7 +42,8 @@ export function Header({
         gap: '16px'
       }}>
         {/* Brand / Logo */}
-        <div 
+        <div
+          className="app-header__brand"
           onClick={() => onNavigate('planner')}
           style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
         >
@@ -76,8 +77,8 @@ export function Header({
         </div>
 
         {/* View Navigation Tabs */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <button
+        <nav className="app-header__nav" aria-label="Main navigation" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button className="app-header__nav-item"
             onClick={() => onNavigate('planner')}
             style={{
               display: 'flex',
@@ -97,7 +98,7 @@ export function Header({
             <span>My Tasks</span>
           </button>
 
-          <button
+          <button className="app-header__nav-item"
             onClick={() => onNavigate('shared')}
             style={{
               display: 'flex',
@@ -129,7 +130,7 @@ export function Header({
             )}
           </button>
 
-          <button
+          <button className="app-header__nav-item"
             onClick={() => onNavigate('analytics')}
             style={{
               display: 'flex',
@@ -149,7 +150,7 @@ export function Header({
             <span>Time Analytics</span>
           </button>
 
-          <button
+          <button className="app-header__nav-item"
             onClick={() => onNavigate('parking')}
             style={{
               display: 'flex',
@@ -183,8 +184,9 @@ export function Header({
         </nav>
 
         {/* Logged In User Gmail Profile & Logout Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="app-header__account" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
+            className="app-header__partner"
             onClick={() => setShowPartnerModal(true)}
             title="Set Spouse / Partner Gmail ID for task sharing"
             style={{
@@ -201,13 +203,14 @@ export function Header({
             }}
           >
             <Mail size={14} style={{ color: 'var(--accent-primary)' }} />
-            <span>{activeUser.email}</span>
-            <span style={{ fontSize: '10px', color: 'var(--shared-color)', backgroundColor: 'var(--shared-bg)', padding: '1px 6px', borderRadius: '4px', border: '1px solid var(--shared-border)' }}>
+            <span className="app-header__email">{activeUser.email}</span>
+            <span className="app-header__partner-label" style={{ fontSize: '10px', color: 'var(--shared-color)', backgroundColor: 'var(--shared-bg)', padding: '1px 6px', borderRadius: '4px', border: '1px solid var(--shared-border)' }}>
               {activeUser.partnerEmail ? `Partner: ${activeUser.partnerEmail}` : 'Set partner'}
             </span>
           </button>
 
           <button
+            className="app-header__logout"
             onClick={onLogout}
             title="Sign out of account"
             style={{

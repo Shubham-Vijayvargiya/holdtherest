@@ -85,6 +85,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 button {
@@ -124,26 +125,390 @@ input, textarea, select {
 
 /* --- MOBILE RESPONSIVE MEDIA QUERIES --- */
 @media (max-width: 640px) {
-  header > div {
-    padding: 10px 14px !important;
-    gap: 10px !important;
+  .app-header {
+    position: static !important;
   }
 
-  nav {
+  .app-header__inner {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    padding: 12px 16px 14px !important;
+    gap: 12px !important;
+  }
+
+  .app-header__brand {
+    gap: 9px !important;
+  }
+
+  .app-header__brand > div:first-child {
+    width: 34px !important;
+    height: 34px !important;
+    flex: 0 0 34px;
+  }
+
+  .app-header__brand h1 {
+    font-size: 17px !important;
+  }
+
+  .app-header__brand p {
+    font-size: 10px !important;
+  }
+
+  .app-header__nav {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     width: 100%;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    justify-content: flex-start !important;
+    gap: 4px !important;
+    order: 3;
+    overflow: visible;
   }
 
-  nav button {
-    padding: 6px 10px !important;
-    font-size: 12px !important;
+  .app-header__nav-item {
+    min-width: 0;
+    min-height: 48px;
+    padding: 7px 3px !important;
+    gap: 4px !important;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 10px !important;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .app-header__nav-item svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .app-header__account {
+    width: 100%;
+    min-width: 0;
+    gap: 8px !important;
+    order: 2;
+  }
+
+  .app-header__partner {
+    min-width: 0;
+    flex: 1;
+    height: 42px;
+    padding: 7px 10px !important;
+    border-radius: var(--radius-md) !important;
+  }
+
+  .app-header__email {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11.5px;
+  }
+
+  .app-header__partner-label {
+    flex: 0 0 auto;
     white-space: nowrap;
   }
 
-  main {
-    padding: 16px 12px !important;
+  .app-header__logout {
+    width: 42px;
+    height: 42px;
+    padding: 0 !important;
+    justify-content: center;
+  }
+
+  .app-header__logout span {
+    display: none;
+  }
+
+  .app-main {
+    width: 100%;
+    padding: 18px 12px 32px !important;
+  }
+
+  .app-main--focus {
+    padding: 0 !important;
+  }
+
+  .brain-dump {
+    padding: 18px 16px !important;
+    margin-bottom: 18px !important;
+    border-radius: 14px !important;
+  }
+
+  .brain-dump__intro h2 {
+    font-size: 17px !important;
+  }
+
+  .brain-dump__intro p {
+    font-size: 12px !important;
+    line-height: 1.45;
+  }
+
+  .brain-dump__capture {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .brain-dump__input {
+    min-width: 0 !important;
+    width: 100%;
+    height: 48px;
+    padding: 12px 14px !important;
+    font-size: 16px !important;
+  }
+
+  .brain-dump__submit {
+    width: 100%;
+    height: 46px !important;
+    padding: 0 16px !important;
+    justify-content: center;
+  }
+
+  .brain-dump__options {
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding-top: 12px !important;
+  }
+
+  .brain-dump__priorities {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    gap: 6px !important;
+  }
+
+  .brain-dump__priorities > span {
+    grid-column: 1 / -1;
+  }
+
+  .brain-dump__priorities button {
+    min-height: 38px;
+    padding: 6px 4px !important;
+    line-height: 1.15;
+  }
+
+  .brain-dump__privacy,
+  .brain-dump__privacy button {
+    width: 100%;
+  }
+
+  .brain-dump__privacy button {
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  .task-board {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .task-column {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .shared-view__banner {
+    padding: 18px 16px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .shared-view__banner h2,
+  .parking-view h2,
+  .analytics-view h2 {
+    font-size: 18px !important;
+  }
+
+  .shared-task {
+    padding: 16px 14px !important;
+    gap: 10px !important;
+  }
+
+  .analytics-stats {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .analytics-stats > div {
+    padding: 16px !important;
+  }
+
+  .analytics-panel {
+    padding: 18px 16px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .analytics-session {
+    align-items: flex-start !important;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px !important;
+  }
+
+  .analytics-session > div {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .parking-item {
+    align-items: stretch !important;
+    padding: 14px !important;
+  }
+
+  .parking-item__content {
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .parking-item__actions {
+    width: 100%;
+  }
+
+  .parking-item__actions > span {
+    width: 100%;
+  }
+
+  .login-header {
+    position: static !important;
+  }
+
+  .login-header__inner {
+    min-height: 64px;
+    padding: 10px 16px !important;
+    gap: 10px;
+  }
+
+  .login-brand {
+    min-width: 0;
+    gap: 8px !important;
+  }
+
+  .login-brand__icon {
+    width: 34px !important;
+    height: 34px !important;
+    flex: 0 0 34px;
+  }
+
+  .login-brand__name {
+    max-width: 130px;
+    font-size: 16px !important;
+    line-height: 1.1;
+  }
+
+  .login-header__actions {
+    gap: 4px !important;
+  }
+
+  .login-header__signin {
+    display: none;
+  }
+
+  .login-header__cta {
+    min-height: 42px;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    line-height: 1.2;
+  }
+
+  .login-main {
+    width: 100%;
+    padding: 28px 16px 40px !important;
+  }
+
+  .login-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 24px !important;
+    margin-bottom: 32px !important;
+  }
+
+  .login-hero__title {
+    font-size: clamp(29px, 8vw, 36px) !important;
+    line-height: 1.08 !important;
+    margin-bottom: 22px !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  .login-benefits {
+    gap: 14px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .login-benefit {
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .login-benefit > div {
+    width: 34px !important;
+    height: 34px !important;
+    flex: 0 0 34px !important;
+  }
+
+  .login-benefit > span {
+    padding-top: 4px;
+    font-size: 14px !important;
+    line-height: 1.45;
+  }
+
+  .login-google-form {
+    max-width: none !important;
+    width: 100%;
+    margin-bottom: 10px !important;
+  }
+
+  .login-google-form button {
+    min-height: 52px;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+
+  .login-privacy-note {
+    font-size: 11px !important;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  .login-hero__visual {
+    display: none;
+  }
+
+  .login-trust-bar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    align-items: start !important;
+    padding: 16px !important;
+    gap: 14px 10px !important;
+    margin-bottom: 32px !important;
+  }
+
+  .login-trust-bar > div {
+    align-items: flex-start !important;
+    font-size: 11px !important;
+    line-height: 1.35;
+  }
+
+  .login-demo__header {
+    align-items: flex-start !important;
+    padding: 16px !important;
+  }
+
+  .login-demo__tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .login-demo__tabs button {
+    justify-content: flex-start;
+    padding: 8px !important;
+    font-size: 11px !important;
+  }
+
+  .login-demo__content {
+    padding: 18px 16px !important;
   }
 
   .focus-timer-ring {

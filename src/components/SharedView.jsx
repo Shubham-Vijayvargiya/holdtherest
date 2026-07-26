@@ -10,9 +10,9 @@ export function SharedView({
   onStartFocus
 }) {
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div className="shared-view" style={{ maxWidth: '800px', margin: '0 auto' }}>
       {/* Header Banner */}
-      <div style={{
+      <div className="shared-view__banner" style={{
         backgroundColor: 'var(--shared-bg)',
         border: '1px solid var(--shared-border)',
         borderRadius: 'var(--radius-lg)',
@@ -57,6 +57,7 @@ export function SharedView({
 
             return (
               <div
+                className="shared-task"
                 key={task.id}
                 style={{
                   backgroundColor: 'var(--bg-main)',

@@ -11,7 +11,7 @@ export function ParkingLotDrawer({
   const userItems = parkedItems.filter(p => p.userId === activeUser.id);
 
   return (
-    <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+    <div className="parking-view" style={{ maxWidth: '720px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#0f766e', marginBottom: '6px' }}>
@@ -46,6 +46,7 @@ export function ParkingLotDrawer({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {userItems.map(item => (
             <div
+              className="parking-item"
               key={item.id}
               style={{
                 backgroundColor: 'var(--bg-main)',
@@ -60,7 +61,7 @@ export function ParkingLotDrawer({
                 gap: '12px'
               }}
             >
-              <div style={{ flex: 1, minWidth: '240px' }}>
+              <div className="parking-item__content" style={{ flex: 1, minWidth: '240px' }}>
                 <p style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
                   "{item.text}"
                 </p>
@@ -70,7 +71,7 @@ export function ParkingLotDrawer({
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="parking-item__actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontWeight: 600 }}>Convert to:</span>
                 
                 <button

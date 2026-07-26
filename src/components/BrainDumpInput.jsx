@@ -24,7 +24,7 @@ export function BrainDumpInput({ onAddTask }) {
   };
 
   return (
-    <div style={{
+    <div className="brain-dump" style={{
       backgroundColor: 'var(--bg-main)',
       borderRadius: 'var(--radius-lg)',
       border: '1px solid var(--border-light)',
@@ -32,7 +32,7 @@ export function BrainDumpInput({ onAddTask }) {
       boxShadow: 'var(--shadow-md)',
       marginBottom: '32px'
     }}>
-      <div style={{ marginBottom: '14px' }}>
+      <div className="brain-dump__intro" style={{ marginBottom: '14px' }}>
         <h2 style={{
           fontFamily: 'var(--font-heading)',
           fontSize: '18px',
@@ -48,12 +48,13 @@ export function BrainDumpInput({ onAddTask }) {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <div className="brain-dump__capture" style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="What's competing for your attention? Dump it here..."
+            className="brain-dump__input"
             style={{
               flex: 1,
               minWidth: '260px',
@@ -71,6 +72,7 @@ export function BrainDumpInput({ onAddTask }) {
           />
 
           <button
+            className="brain-dump__submit"
             type="submit"
             disabled={!title.trim()}
             style={{
@@ -94,7 +96,7 @@ export function BrainDumpInput({ onAddTask }) {
         </div>
 
         {/* Categories & Sharing Options */}
-        <div style={{
+        <div className="brain-dump__options" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -104,7 +106,7 @@ export function BrainDumpInput({ onAddTask }) {
           borderTop: '1px dashed var(--border-light)'
         }}>
           {/* Priority Picker */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="brain-dump__priorities" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Priority:</span>
             {[CATEGORIES.MUST, CATEGORIES.SHOULD, CATEGORIES.NICE].map(cat => {
               const cfg = CATEGORY_CONFIG[cat];
@@ -133,7 +135,7 @@ export function BrainDumpInput({ onAddTask }) {
           </div>
 
           {/* Privacy / Share Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="brain-dump__privacy" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               type="button"
               onClick={() => setIsShared(!isShared)}
