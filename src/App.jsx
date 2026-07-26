@@ -12,10 +12,8 @@ import { SharedView } from './components/SharedView';
 import { ParkingLotDrawer } from './components/ParkingLotDrawer';
 
 export function App() {
-  const [isCheckingSession, setIsCheckingSession] = useState(isSupabaseConfigured);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return !isSupabaseConfigured && localStorage.getItem('minddump_demo_authenticated') === 'true';
-  });
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [activeUserEmail, setActiveUserEmail] = useState(() => storage.getActiveUserEmail());
   const [partnerEmail, setPartnerEmail] = useState(() => storage.getPartnerEmail());
@@ -40,7 +38,10 @@ export function App() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return undefined;
+    if (!isSupabaseConfigured) {
+      setIsCheckingSession(false);
+      return undefined;
+    }
 
     let active = true;
     authService.getSession()
@@ -49,6 +50,7 @@ export function App() {
         if (session?.user?.email) {
           storage.setActiveUserEmail(session.user.email);
           setActiveUserEmail(session.user.email);
+          setPartnerEmail(storage.getPartnerEmail(session.user.email));
           setIsAuthenticated(true);
         }
       })
@@ -59,6 +61,7 @@ export function App() {
       if (session?.user?.email) {
         storage.setActiveUserEmail(session.user.email);
         setActiveUserEmail(session.user.email);
+        setPartnerEmail(storage.getPartnerEmail(session.user.email));
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
@@ -92,21 +95,12 @@ export function App() {
 
   const activeUser = storage.getCurrentUser();
 
-  const handleLogin = async (userEmail = 'shubh@gmail.com') => {
-    if (isSupabaseConfigured) {
-      await authService.signInWithGoogle();
-      return;
-    }
-    storage.setActiveUserEmail(userEmail);
-    setActiveUserEmail(userEmail);
-    localStorage.setItem('minddump_demo_authenticated', 'true');
-    setIsAuthenticated(true);
-    setCurrentView('planner');
+  const handleLogin = async () => {
+    await authService.signInWithGoogle();
   };
 
   const handleLogout = async () => {
-    if (isSupabaseConfigured) await authService.signOut();
-    localStorage.removeItem('minddump_demo_authenticated');
+    await authService.signOut();
     setIsAuthenticated(false);
     setActiveFocusTask(null);
     setCurrentView('planner');
@@ -199,13 +193,20 @@ export function App() {
     refreshData();
   };
 
-  // If unauthenticated, force login landing gate!
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="app-loading app-error" role="alert">
+        Authentication is not configured. Add the Supabase project URL and publishable key to the build environment.
+      </div>
+    );
+  }
+
   if (isCheckingSession) {
     return <div className="app-loading" role="status">Restoring your session…</div>;
   }
 
   if (!isAuthenticated) {
-    return <LoginScreen onLogin={handleLogin} isCloudConfigured={isSupabaseConfigured} />;
+    return <LoginScreen onLogin={handleLogin} />;
   }
 
   // Filter tasks visible to active user email

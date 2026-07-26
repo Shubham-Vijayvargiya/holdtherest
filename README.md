@@ -9,8 +9,7 @@ A calm, privacy-conscious task planner built around one visible focus at a time.
 - Parking lot for distracting thoughts
 - Explicit partner sharing with owner-only privacy and delete controls
 - Focus-session analytics
-- Optional Google authentication through Supabase
-- Local, clearly labelled demo mode when cloud credentials are absent
+- Required Google authentication through Supabase
 
 ## Local development
 
@@ -37,11 +36,11 @@ The anonymous key is safe to expose in a browser only when row-level security re
 
 ## Current cloud scope
 
-Configured builds use Supabase Google authentication. The included schema and cloud data service enforce owner/recipient reads and owner-only writes. The browser demo storage remains the active task repository in this release; connect `cloudDb` to the application state before treating cross-device synchronization as complete.
+The application requires Supabase Google authentication and has no local sign-in fallback. The included schema and cloud data service enforce owner/recipient reads and owner-only writes. Browser storage remains the active task repository in this release; connect `cloudDb` to the application state before treating cross-device synchronization as complete.
 
 ## Security model
 
-- Private local tasks are visible only to the selected demo identity in the browser UI.
+- Private browser tasks are scoped to the authenticated Google email in the UI.
 - Shared tasks are visible only to their owner and explicit recipient.
 - Only owners can delete tasks or change sharing.
 - Supabase policies derive identity from the authenticated JWT rather than client-provided user IDs.

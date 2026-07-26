@@ -201,9 +201,9 @@ export function Header({
             }}
           >
             <Mail size={14} style={{ color: 'var(--accent-primary)' }} />
-            <span>{activeUser.email || 'shubh@gmail.com'}</span>
+            <span>{activeUser.email}</span>
             <span style={{ fontSize: '10px', color: 'var(--shared-color)', backgroundColor: 'var(--shared-bg)', padding: '1px 6px', borderRadius: '4px', border: '1px solid var(--shared-border)' }}>
-              Partner: {activeUser.partnerEmail || 'wife@gmail.com'}
+              {activeUser.partnerEmail ? `Partner: ${activeUser.partnerEmail}` : 'Set partner'}
             </span>
           </button>
 

@@ -33,7 +33,7 @@ export const authService = {
     if (!supabase) throw new Error('Cloud authentication is not configured.');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href.split('#')[0] }
+      options: { redirectTo: new URL(import.meta.env.BASE_URL, window.location.href).href }
     });
     if (error) throw error;
   },

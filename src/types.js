@@ -1,17 +1,4 @@
 /**
- * User Profile definition
- */
-export const USERS = {
-  SHUBH: {
-    id: 'user_shubh',
-    name: 'Shubh',
-    email: 'shubh@gmail.com',
-    avatar: '👨‍💻',
-    partnerEmail: 'spouse@gmail.com'
-  }
-};
-
-/**
  * Task Category types
  */
 export const CATEGORIES = {
