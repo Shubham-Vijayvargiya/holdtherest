@@ -206,7 +206,7 @@ export function LoginScreen({ onLogin }) {
                   <Users size={18} />
                 </div>
                 <span style={{ fontSize: '15px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                  Selectively share household tasks by typing partner's Gmail ID
+                  Selectively share tasks with up to three trusted people
                 </span>
               </div>
             </div>
@@ -431,7 +431,7 @@ export function LoginScreen({ onLogin }) {
                   <div style={{ backgroundColor: 'var(--should-bg)', border: '1px solid var(--should-border)', borderRadius: 'var(--radius-md)', padding: '16px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--should-color)', textTransform: 'uppercase' }}>Should Do</span>
                     <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)', marginTop: '8px' }}>Order Household Groceries</p>
-                    <span style={{ fontSize: '11.5px', color: 'var(--shared-color)', fontWeight: 600, display: 'block', marginTop: '8px' }}>Shared with partner@example.com</span>
+                    <span style={{ fontSize: '11.5px', color: 'var(--shared-color)', fontWeight: 600, display: 'block', marginTop: '8px' }}>Shared with Alex</span>
                   </div>
 
                   <div style={{ backgroundColor: 'var(--nice-bg)', border: '1px solid var(--nice-border)', borderRadius: 'var(--radius-md)', padding: '16px' }}>
@@ -515,7 +515,7 @@ export function LoginScreen({ onLogin }) {
                     <span>Shared Household Hub</span>
                   </div>
                   <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>
-                    Tasks are private by default. Toggle "Shared" and type your partner's Gmail ID to display common items on both of your screens.
+                    Tasks are private by default. Add up to three trusted people, then choose exactly who can see each shared task.
                   </p>
                 </div>
 
@@ -525,7 +525,7 @@ export function LoginScreen({ onLogin }) {
                       <span style={{ fontSize: '11px', color: 'var(--shared-color)', fontWeight: 700 }}>Shared Item</span>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>Order Groceries & Milk</p>
                     </div>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Shared with partner@example.com</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Shared with Alex</span>
                   </div>
 
                   <div style={{ backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -533,7 +533,7 @@ export function LoginScreen({ onLogin }) {
                       <span style={{ fontSize: '11px', color: 'var(--shared-color)', fontWeight: 700 }}>Shared Item</span>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>Book Weekend Hotel Tickets</p>
                     </div>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Shared with partner@example.com</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Shared with Alex</span>
                   </div>
                 </div>
               </div>
