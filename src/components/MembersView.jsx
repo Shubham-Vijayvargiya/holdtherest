@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, UserPlus, Users, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Clock3, Trash2, UserPlus, Users, ShieldCheck } from 'lucide-react';
 
 export function MembersView({ members, onAddMember, onRemoveMember }) {
   const [email, setEmail] = useState('');
@@ -57,6 +57,10 @@ export function MembersView({ members, onAddMember, onRemoveMember }) {
             <div>
               <strong>{member.display_name || member.member_email.split('@')[0]}</strong>
               <span>{member.member_email}</span>
+              <span className={`member-status member-status--${member.status || 'pending'}`}>
+                {member.status === 'active' ? <CheckCircle2 size={12} /> : <Clock3 size={12} />}
+                {member.status === 'active' ? 'Active — has signed in' : 'Pending — waiting for first sign-in'}
+              </span>
             </div>
             <button className="icon-button danger" onClick={() => onRemoveMember(member.id)} aria-label={`Remove ${member.member_email}`}>
               <Trash2 size={17} />

@@ -14,7 +14,7 @@ const requireUser = async () => {
 
 const normalizeEmail = (value = '') => value.trim().toLowerCase();
 
-const mapTask = (row) => ({
+export const mapTask = (row) => ({
   id: row.id,
   userId: row.user_id,
   userEmail: row.owner_email,
@@ -24,7 +24,11 @@ const mapTask = (row) => ({
   status: row.status,
   totalTimeSpentSeconds: row.total_time_seconds || 0,
   createdAt: row.created_at,
+  updatedAt: row.updated_at,
   completedAt: row.completed_at,
+  dueAt: row.due_at,
+  reminderEnabled: Boolean(row.reminder_enabled),
+  deletedAt: row.deleted_at,
   sharedWithEmails: (row.task_shares || []).map((share) => share.member_email),
   isShared: Boolean(row.task_shares?.length)
 });
@@ -41,18 +45,26 @@ const mapSession = (row) => ({
   durationSeconds: row.duration_seconds
 });
 
+const mapParkingItem = (row) => ({
+  id: row.id,
+  userId: row.user_id,
+  text: row.text,
+  createdAt: row.created_at
+});
+
 const insertActivity = async (taskId, eventType, eventData = {}) => {
   const client = requireClient();
   const user = await requireUser();
   const actorName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-  const { error } = await client.from('task_activity').insert({
+  const { data, error } = await client.from('task_activity').insert({
     task_id: taskId,
     actor_id: user.id,
     actor_name: actorName,
     event_type: eventType,
     event_data: eventData
-  });
+  }).select().single();
   if (error) throw error;
+  return data;
 };
 
 const replaceShares = async (taskId, memberEmails) => {
@@ -61,11 +73,12 @@ const replaceShares = async (taskId, memberEmails) => {
   const normalized = [...new Set((memberEmails || []).map(normalizeEmail).filter(Boolean))].slice(0, 3);
   const { error: deleteError } = await client.from('task_shares').delete().eq('task_id', taskId);
   if (deleteError) throw deleteError;
-  if (!normalized.length) return;
+  if (!normalized.length) return normalized;
   const { error } = await client.from('task_shares').insert(
     normalized.map((email) => ({ task_id: taskId, shared_by: user.id, member_email: email }))
   );
   if (error) throw error;
+  return normalized;
 };
 
 export const cloudDb = {
@@ -90,35 +103,41 @@ export const cloudDb = {
   async fetchDashboard() {
     const client = requireClient();
     await requireUser();
-    const [profileResult, membersResult, tasksResult, sessionsResult, parkingResult] = await Promise.all([
+    const [profileResult, membersResult, tasksResult, sessionsResult, parkingResult, activeFocusResult] = await Promise.all([
       client.from('profiles').select('*').single(),
       client.from('members').select('*').order('created_at'),
-      client.from('tasks').select('*, task_shares(member_email)').order('created_at', { ascending: false }),
-      client.from('focus_sessions').select('*').order('started_at', { ascending: false }),
-      client.from('parking_items').select('*').order('created_at', { ascending: false })
+      client.from('tasks').select('*, task_shares(member_email)').is('deleted_at', null).order('created_at', { ascending: false }),
+      client.from('focus_sessions').select('*').order('started_at', { ascending: false }).limit(250),
+      client.from('parking_items').select('*').order('created_at', { ascending: false }),
+      client.from('active_focus_sessions').select('*').maybeSingle()
     ]);
-    const error = profileResult.error || membersResult.error || tasksResult.error || sessionsResult.error || parkingResult.error;
+    const error = profileResult.error || membersResult.error || tasksResult.error || sessionsResult.error || parkingResult.error || activeFocusResult.error;
     if (error) throw error;
     return {
       profile: profileResult.data,
       members: membersResult.data,
       tasks: tasksResult.data.map(mapTask),
       sessions: sessionsResult.data.map(mapSession),
-      parkedItems: parkingResult.data.map((row) => ({
-        id: row.id,
-        userId: row.user_id,
-        text: row.text,
-        createdAt: row.created_at
-      }))
+      parkedItems: parkingResult.data.map(mapParkingItem),
+      activeFocus: activeFocusResult.data
     };
+  },
+
+  subscribeToChanges(onChange) {
+    const client = requireClient();
+    const channel = client.channel(`workspace-${crypto.randomUUID()}`);
+    ['tasks', 'task_shares', 'task_comments', 'focus_sessions', 'active_focus_sessions', 'task_activity', 'members', 'parking_items']
+      .forEach((table) => {
+        channel.on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => onChange(payload));
+      });
+    channel.subscribe();
+    return () => client.removeChannel(channel);
   },
 
   async updateProfile({ displayName, theme, onboardingComplete = true }) {
     const client = requireClient();
     const user = await requireUser();
-    const updates = {
-      updated_at: new Date().toISOString()
-    };
+    const updates = { updated_at: new Date().toISOString() };
     if (displayName !== undefined) updates.display_name = String(displayName).trim().slice(0, 80);
     if (theme !== undefined) updates.theme = theme;
     if (onboardingComplete !== undefined) updates.onboarding_complete = onboardingComplete;
@@ -145,7 +164,7 @@ export const cloudDb = {
     if (error) throw error;
   },
 
-  async createTask({ title, category, sharedWithEmails = [] }) {
+  async createTask({ title, category, sharedWithEmails = [], dueAt = null, reminderEnabled = false }) {
     const client = requireClient();
     const user = await requireUser();
     const { data, error } = await client.from('tasks').insert({
@@ -154,12 +173,14 @@ export const cloudDb = {
       title: String(title).trim(),
       notes: '',
       category,
-      status: 'backlog'
+      status: 'backlog',
+      due_at: dueAt || null,
+      reminder_enabled: Boolean(dueAt && reminderEnabled)
     }).select().single();
     if (error) throw error;
-    await replaceShares(data.id, sharedWithEmails);
-    await insertActivity(data.id, 'created', { category });
-    return data.id;
+    const shares = await replaceShares(data.id, sharedWithEmails);
+    await insertActivity(data.id, 'created', { category, dueAt: dueAt || null });
+    return mapTask({ ...data, task_shares: shares.map((member_email) => ({ member_email })) });
   },
 
   async moveTask(task, category) {
@@ -174,34 +195,63 @@ export const cloudDb = {
 
   async saveTaskNotes(taskId, notes) {
     const client = requireClient();
+    const value = String(notes || '').slice(0, 5000);
     const { error } = await client.from('tasks').update({
-      notes: String(notes || '').slice(0, 5000),
+      notes: value,
       updated_at: new Date().toISOString()
     }).eq('id', taskId);
     if (error) throw error;
     await insertActivity(taskId, 'notes_updated');
+    return value;
   },
 
   async updateTaskShares(taskId, emails) {
-    await replaceShares(taskId, emails);
-    await insertActivity(taskId, 'sharing_updated', { recipients: emails });
+    const recipients = await replaceShares(taskId, emails);
+    await insertActivity(taskId, 'sharing_updated', { recipients });
+    return recipients;
+  },
+
+  async updateTaskSchedule(taskId, { dueAt, reminderEnabled }) {
+    const client = requireClient();
+    const { error } = await client.from('tasks').update({
+      due_at: dueAt || null,
+      reminder_enabled: Boolean(dueAt && reminderEnabled),
+      updated_at: new Date().toISOString()
+    }).eq('id', taskId);
+    if (error) throw error;
+    await insertActivity(taskId, 'due_date_changed', { dueAt: dueAt || null, reminderEnabled: Boolean(dueAt && reminderEnabled) });
   },
 
   async setTaskCompleted(task, completed) {
     const client = requireClient();
+    const completedAt = completed ? new Date().toISOString() : null;
     const { error } = await client.from('tasks').update({
       status: completed ? 'completed' : 'backlog',
-      completed_at: completed ? new Date().toISOString() : null,
+      completed_at: completedAt,
       updated_at: new Date().toISOString()
     }).eq('id', task.id);
     if (error) throw error;
     await insertActivity(task.id, completed ? 'completed' : 'reopened');
+    return completedAt;
   },
 
-  async deleteTask(taskId) {
+  async softDeleteTask(taskId) {
     const client = requireClient();
-    const { error } = await client.from('tasks').delete().eq('id', taskId);
+    await insertActivity(taskId, 'deleted');
+    const deletedAt = new Date().toISOString();
+    const { error } = await client.from('tasks').update({ deleted_at: deletedAt, updated_at: deletedAt }).eq('id', taskId);
     if (error) throw error;
+    return deletedAt;
+  },
+
+  async restoreTask(taskId) {
+    const client = requireClient();
+    const { error } = await client.from('tasks').update({
+      deleted_at: null,
+      updated_at: new Date().toISOString()
+    }).eq('id', taskId);
+    if (error) throw error;
+    await insertActivity(taskId, 'restored');
   },
 
   async fetchTaskDetail(taskId) {
@@ -223,14 +273,15 @@ export const cloudDb = {
   async addComment(taskId, body, authorName) {
     const client = requireClient();
     const user = await requireUser();
-    const { error } = await client.from('task_comments').insert({
+    const { data, error } = await client.from('task_comments').insert({
       task_id: taskId,
       author_id: user.id,
       author_email: normalizeEmail(user.email),
       author_name: String(authorName || user.email?.split('@')[0] || 'User').slice(0, 80),
       body: String(body).trim()
-    });
+    }).select().single();
     if (error) throw error;
+    return data;
   },
 
   async logFocusSession({ taskId, taskTitle, category, durationSeconds, startedAt }) {
@@ -238,7 +289,7 @@ export const cloudDb = {
     const user = await requireUser();
     const duration = Math.max(1, Math.round(durationSeconds));
     const endedAt = new Date();
-    const { error } = await client.from('focus_sessions').insert({
+    const { data, error } = await client.from('focus_sessions').insert({
       task_id: taskId,
       user_id: user.id,
       user_email: normalizeEmail(user.email),
@@ -247,18 +298,51 @@ export const cloudDb = {
       started_at: startedAt || new Date(endedAt.getTime() - duration * 1000).toISOString(),
       ended_at: endedAt.toISOString(),
       duration_seconds: duration
-    });
+    }).select().single();
+    if (error) throw error;
+    return mapSession(data);
+  },
+
+  async fetchActiveFocus() {
+    const client = requireClient();
+    const user = await requireUser();
+    const { data, error } = await client.from('active_focus_sessions').select('*').eq('user_id', user.id).maybeSingle();
+    if (error) throw error;
+    return data;
+  },
+
+  async saveActiveFocus({ taskId, presetSeconds, accumulatedSeconds, startedAt, isRunning }) {
+    const client = requireClient();
+    const user = await requireUser();
+    const { data, error } = await client.from('active_focus_sessions').upsert({
+      user_id: user.id,
+      task_id: taskId,
+      preset_seconds: presetSeconds,
+      accumulated_seconds: Math.max(0, Math.round(accumulatedSeconds || 0)),
+      started_at: startedAt || null,
+      is_running: Boolean(isRunning),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' }).select().single();
+    if (error) throw error;
+    return data;
+  },
+
+  async clearActiveFocus() {
+    const client = requireClient();
+    const user = await requireUser();
+    const { error } = await client.from('active_focus_sessions').delete().eq('user_id', user.id);
     if (error) throw error;
   },
 
   async addParkingItem(text) {
     const client = requireClient();
     const user = await requireUser();
-    const { error } = await client.from('parking_items').insert({
+    const { data, error } = await client.from('parking_items').insert({
       user_id: user.id,
       text: String(text).trim()
-    });
+    }).select().single();
     if (error) throw error;
+    return mapParkingItem(data);
   },
 
   async removeParkingItem(id) {

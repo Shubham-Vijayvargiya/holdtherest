@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { CATEGORIES, CATEGORY_CONFIG } from '../types';
-import { Plus, Check, Users } from 'lucide-react';
+import { Plus, Check, Users, CalendarClock, Bell } from 'lucide-react';
 
-export function BrainDumpInput({ onAddTask, members = [] }) {
+export function BrainDumpInput({ onAddTask, members = [], onRequestReminderPermission }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(CATEGORIES.MUST);
   const [selectedEmails, setSelectedEmails] = useState([]);
+  const [dueAt, setDueAt] = useState('');
+  const [reminderEnabled, setReminderEnabled] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -14,9 +16,17 @@ export function BrainDumpInput({ onAddTask, members = [] }) {
     if (!title.trim()) return;
     setSaving(true);
     try {
-      await onAddTask({ title: title.trim(), category, sharedWithEmails: selectedEmails });
+      await onAddTask({
+        title: title.trim(),
+        category,
+        sharedWithEmails: selectedEmails,
+        dueAt: dueAt ? new Date(dueAt).toISOString() : null,
+        reminderEnabled
+      });
       setTitle('');
       setSelectedEmails([]);
+      setDueAt('');
+      setReminderEnabled(false);
       setFeedbackMsg('Captured. You can add context when you focus on it.');
       window.setTimeout(() => setFeedbackMsg(''), 3500);
     } finally {
@@ -41,6 +51,7 @@ export function BrainDumpInput({ onAddTask, members = [] }) {
       <form onSubmit={handleSubmit}>
         <div className="brain-dump__capture">
           <input
+            data-quick-task-input
             className="brain-dump__input"
             type="text"
             value={title}
@@ -94,6 +105,39 @@ export function BrainDumpInput({ onAddTask, members = [] }) {
               </div>
             </div>
           )}
+
+          <div className="quick-schedule">
+            <label>
+              <CalendarClock size={14} />
+              <span>Optional due date</span>
+              <input
+                type="datetime-local"
+                value={dueAt}
+                min={new Date().toISOString().slice(0, 16)}
+                onChange={(event) => {
+                  setDueAt(event.target.value);
+                  if (!event.target.value) setReminderEnabled(false);
+                }}
+              />
+            </label>
+            <label className="reminder-toggle">
+              <input
+                type="checkbox"
+                checked={reminderEnabled}
+                disabled={!dueAt}
+                onChange={async (event) => {
+                  if (!event.target.checked) {
+                    setReminderEnabled(false);
+                    return;
+                  }
+                  const granted = await onRequestReminderPermission?.();
+                  setReminderEnabled(Boolean(granted));
+                }}
+              />
+              <Bell size={13} />
+              Remind me
+            </label>
+          </div>
         </div>
       </form>
 
