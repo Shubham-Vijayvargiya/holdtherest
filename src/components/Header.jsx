@@ -9,7 +9,7 @@ const navItems = [
   { id: 'members', label: 'People', icon: UserRound }
 ];
 
-export function Header({ profile, onLogout, currentView, onNavigate, parkedCount, sharedCount, darkMode, onToggleTheme }) {
+export function Header({ profile, onLogout, currentView, onNavigate, parkedCount, sharedCount, darkMode, themeSaving, onToggleTheme }) {
   return (
     <header className="app-header">
       <div className="app-header__inner">
@@ -41,7 +41,13 @@ export function Header({ profile, onLogout, currentView, onNavigate, parkedCount
         </nav>
 
         <div className="app-header__account">
-          <button className="icon-button" onClick={onToggleTheme} aria-label={darkMode ? 'Use light mode' : 'Use dark mode'}>
+          <button
+            className="icon-button"
+            onClick={onToggleTheme}
+            disabled={themeSaving}
+            aria-busy={themeSaving}
+            aria-label={darkMode ? 'Use light mode' : 'Use dark mode'}
+          >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <button className="app-header__logout" onClick={onLogout}>

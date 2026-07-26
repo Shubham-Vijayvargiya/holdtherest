@@ -30,6 +30,7 @@ export function App() {
   const [taskDetail, setTaskDetail] = useState(null);
   const [confirmTask, setConfirmTask] = useState(null);
   const [loadingData, setLoadingData] = useState(false);
+  const [savingTheme, setSavingTheme] = useState(false);
   const [appError, setAppError] = useState('');
 
   const loadDashboard = useCallback(async (authUser = user) => {
@@ -118,6 +119,35 @@ export function App() {
     }
   };
 
+  const handleToggleTheme = async () => {
+    if (savingTheme || !dashboard.profile) return;
+
+    const previousTheme = dashboard.profile.theme || 'light';
+    const nextTheme = previousTheme === 'dark' ? 'light' : 'dark';
+
+    setAppError('');
+    setSavingTheme(true);
+    setDashboard((current) => ({
+      ...current,
+      profile: { ...current.profile, theme: nextTheme }
+    }));
+
+    try {
+      await cloudDb.updateProfile({
+        theme: nextTheme,
+        onboardingComplete: dashboard.profile.onboarding_complete
+      });
+    } catch (error) {
+      setDashboard((current) => ({
+        ...current,
+        profile: { ...current.profile, theme: previousTheme }
+      }));
+      setAppError(error.message || 'Your theme preference could not be saved.');
+    } finally {
+      setSavingTheme(false);
+    }
+  };
+
   const ownerTasks = dashboard.tasks.filter((task) => task.userId === user?.id);
   const sharedTasks = dashboard.tasks.filter((task) => task.isShared);
 
@@ -137,7 +167,8 @@ export function App() {
           sharedCount={sharedTasks.filter((task) => task.userId !== user.id).length}
           parkedCount={dashboard.parkedItems.length}
           darkMode={darkMode}
-          onToggleTheme={() => mutate(() => cloudDb.updateProfile({ theme: darkMode ? 'light' : 'dark', onboardingComplete: dashboard.profile?.onboarding_complete }))}
+          themeSaving={savingTheme}
+          onToggleTheme={handleToggleTheme}
           onLogout={async () => {
             await authService.signOut();
             setUser(null);
